@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cricket Live Data</title>
+    <!-- Include jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Include DataTables CSS and JS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        h1, h2 {
+            text-align: center;
+            color: #333;
+        }
+        #meta {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .dataTables_wrapper .dataTables_filter {
+            padding-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Cricket Live Data</h1>
+    <div id="meta"></div>
+    <table id="data-table" class="display">
+        <thead>
+            <tr>
+                <th>Series ID</th>
+                <th>Series Name</th>
+                <th>Status</th>
+                <th>Season</th>
+                <th>Updated At</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <script>
+        const data = null;
+
+        const xhr = new XMLHttpRequest();
+        xhr.withCredentials = true;
+
+        xhr.addEventListener('readystatechange', function () {
+            if (this.readyState === this.DONE) {
+                const response = JSON.parse(this.responseText);
+                displayMeta(response.meta);
+                displayTable(response.results);
+                initializeDataTable();
+            }
+        });
+
+        xhr.open('GET', 'https://cricket-live-data.p.rapidapi.com/series');
+        xhr.setRequestHeader('x-rapidapi-key', 'd76d993eeamshaf573f3022e41d7p146ed0jsnebd1c526bcef');
+        xhr.setRequestHeader('x-rapidapi-host', 'cricket-live-data.p.rapidapi.com');
+
+        xhr.send(data);
+
+        function displayMeta(meta) {
+            const metaDiv = document.getElementById('meta');
+            metaDiv.innerHTML = `<h2>${meta.title}</h2><p>${meta.description}</p>`;
+        }
+
+        function displayTable(results) {
+            const tbody = document.querySelector('#data-table tbody');
+            tbody.innerHTML = ''; // Clear any existing rows
+
+            results.forEach(result => {
+                result.series.forEach(series => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${series.series_id}</td>
+                        <td>${series.series_name}</td>
+                        <td>${series.status}</td>
+                        <td>${series.season}</td>
+                        <td>${new Date(series.updated_at).toLocaleString()}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            });
+        }
+
+        function initializeDataTable() {
+            $(document).ready(function() {
+                $('#data-table').DataTable({
+                    "paging": true,
+                    "searching": true,
+                    "ordering": true,
+                    "order": [[ 0, "desc" ]],
+                    "columnDefs": [
+                        {
+                            "targets": 3, // Season column
+                            "searchable": true,
+                            "orderable": true
+                        }
+                    ]
+                });
+            });
+        }
+    </script>
+</body>
+</html>
